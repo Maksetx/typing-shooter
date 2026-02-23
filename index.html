@@ -29,7 +29,6 @@
   }
   #how-screen, #leaderboard-screen {
     background: rgba(0,0,0,0.94); backdrop-filter: blur(8px);
-    opacity: 0; pointer-events: none;
   }
 
   .menu-title {
@@ -212,7 +211,7 @@
   <div class="go-hint">ПРОБІЛ — ГРАТИ ЗНОВУ</div>
 </div>
 
-<div id="how-screen" class="overlay">
+<div id="how-screen" class="overlay hidden">
   <div class="how-content">
     <h2>ЯК ГРАТИ</h2>
     <p>Ворожі кораблі летять зверху зі словами.</p>
@@ -225,7 +224,7 @@
   <button class="menu-btn" id="btn-how-close" style="margin-top:24px">НАЗАД</button>
 </div>
 
-<div id="leaderboard-screen" class="overlay">
+<div id="leaderboard-screen" class="overlay hidden">
   <div class="lb-content">
     <h2>РЕЙТИНГ</h2>
     <div id="lb-body"></div>
@@ -509,7 +508,7 @@ function getRandomWord() {
   return pool[Math.floor(Math.random()*pool.length)];
 }
 function spawnEnemy() {
-  var speed=60+wave*8+Math.random()*20, word=getRandomWord();
+  var speed=(60+wave*8+Math.random()*20)*0.8, word=getRandomWord();
   var x=Math.random()*(W-200)+100;
   for(var att=0;att<10;att++){
     var ok=true;
@@ -613,11 +612,11 @@ document.getElementById("btn-menu").addEventListener("click", function(){
   document.getElementById("game-over-screen").classList.remove("visible");
   document.getElementById("menu-screen").classList.remove("hidden"); gameState="menu";
 });
-document.getElementById("btn-how").addEventListener("click", function(){ document.getElementById("how-screen").classList.add("visible"); });
-document.getElementById("btn-how-close").addEventListener("click", function(){ document.getElementById("how-screen").classList.remove("visible"); });
-document.getElementById("btn-lb-menu").addEventListener("click", function(){ renderLeaderboard(); document.getElementById("leaderboard-screen").classList.add("visible"); });
-document.getElementById("btn-lb-go").addEventListener("click", function(){ renderLeaderboard(lastGameTimestamp); document.getElementById("leaderboard-screen").classList.add("visible"); });
-document.getElementById("btn-lb-close").addEventListener("click", function(){ document.getElementById("leaderboard-screen").classList.remove("visible"); });
+document.getElementById("btn-how").addEventListener("click", function(){ document.getElementById("how-screen").classList.remove("hidden"); document.getElementById("how-screen").classList.add("visible"); });
+document.getElementById("btn-how-close").addEventListener("click", function(){ document.getElementById("how-screen").classList.add("hidden"); document.getElementById("how-screen").classList.remove("visible"); });
+document.getElementById("btn-lb-menu").addEventListener("click", function(){ renderLeaderboard(); document.getElementById("leaderboard-screen").classList.remove("hidden"); document.getElementById("leaderboard-screen").classList.add("visible"); });
+document.getElementById("btn-lb-go").addEventListener("click", function(){ renderLeaderboard(lastGameTimestamp); document.getElementById("leaderboard-screen").classList.remove("hidden"); document.getElementById("leaderboard-screen").classList.add("visible"); });
+document.getElementById("btn-lb-close").addEventListener("click", function(){ document.getElementById("leaderboard-screen").classList.add("hidden"); document.getElementById("leaderboard-screen").classList.remove("visible"); });
 
 document.getElementById("name-input").addEventListener("keydown", function(ev) {
   if (ev.key==="Enter") { ev.preventDefault(); startGame(); }
