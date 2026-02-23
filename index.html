@@ -1,222 +1,670 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Typing Shooter</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0a0a0f;
-      overflow: hidden;
-      font-family: 'Courier New', monospace;
-      color: #fff;
-    }
-    #gameCanvas {
-      display: block;
-      margin: 0 auto;
-    }
-    #ui {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 24px;
-      background: rgba(0,0,0,0.6);
-      border-bottom: 1px solid rgba(0,255,255,0.2);
-      pointer-events: none;
-      z-index: 10;
-    }
-    .stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    .stat-label {
-      font-size: 10px;
-      color: rgba(0,255,255,0.6);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    .stat-value {
-      font-size: 22px;
-      font-weight: bold;
-      color: #00ffff;
-      text-shadow: 0 0 10px #00ffff;
-    }
-    #comboDisplay {
-      font-size: 14px;
-      color: #ff6600;
-      text-shadow: 0 0 8px #ff6600;
-      letter-spacing: 1px;
-    }
-    #inputArea {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      align-items: center;
-      padding: 16px 24px;
-      background: rgba(0,0,0,0.8);
-      border-top: 1px solid rgba(0,255,255,0.2);
-      gap: 12px;
-      z-index: 10;
-    }
-    #prompt {
-      color: rgba(0,255,255,0.5);
-      font-size: 16px;
-      letter-spacing: 2px;
-    }
-    #typeInput {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #00ffff;
-      font-size: 20px;
-      font-family: 'Courier New', monospace;
-      caret-color: #00ffff;
-      text-shadow: 0 0 8px #00ffff;
-      letter-spacing: 2px;
-    }
-    #overlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.85);
-      z-index: 100;
-    }
-    #overlay h1 {
-      font-size: 52px;
-      color: #00ffff;
-      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
-      letter-spacing: 6px;
-      margin-bottom: 12px;
-    }
-    #overlay .subtitle {
-      font-size: 16px;
-      color: rgba(0,255,255,0.6);
-      letter-spacing: 3px;
-      margin-bottom: 48px;
-    }
-    #overlay .stats-block {
-      display: flex;
-      gap: 48px;
-      margin-bottom: 48px;
-    }
-    #overlay .big-stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #overlay .big-stat span:first-child {
-      font-size: 11px;
-      color: rgba(0,255,255,0.5);
-      letter-spacing: 2px;
-    }
-    #overlay .big-stat span:last-child {
-      font-size: 40px;
-      color: #00ffff;
-      text-shadow: 0 0 15px #00ffff;
-      font-weight: bold;
-    }
-    #startBtn {
-      padding: 14px 48px;
-      background: transparent;
-      border: 2px solid #00ffff;
-      color: #00ffff;
-      font-size: 18px;
-      font-family: 'Courier New', monospace;
-      letter-spacing: 4px;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: all 0.2s;
-      box-shadow: 0 0 20px rgba(0,255,255,0.3);
-    }
-    #startBtn:hover {
-      background: rgba(0,255,255,0.1);
-      box-shadow: 0 0 30px rgba(0,255,255,0.6);
-    }
-    #levelUp {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 36px;
-      color: #ff6600;
-      text-shadow: 0 0 20px #ff6600;
-      letter-spacing: 6px;
-      pointer-events: none;
-      z-index: 50;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    #lives {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .heart {
-      font-size: 18px;
-      filter: drop-shadow(0 0 6px #ff0055);
-    }
-    .heart.dead {
-      opacity: 0.2;
-      filter: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZType — Кириличний Космос</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000; overflow: hidden; font-family: 'Exo 2', sans-serif;
+    user-select: none; display: flex; justify-content: center; align-items: center;
+    height: 100vh; width: 100vw;
+  }
+  canvas { display: block; }
+
+  .overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; transition: opacity 0.5s;
+  }
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+  .overlay.visible { opacity: 1; pointer-events: all; }
+
+  #menu-screen { background: radial-gradient(ellipse at center, rgba(0,30,60,0.9) 0%, rgba(0,0,0,0.97) 100%); }
+  #game-over-screen {
+    background: radial-gradient(ellipse at center, rgba(60,0,0,0.9) 0%, rgba(0,0,0,0.97) 100%);
+    opacity: 0; pointer-events: none;
+  }
+  #how-screen, #leaderboard-screen {
+    background: rgba(0,0,0,0.94); backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none;
+  }
+
+  .menu-title {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(52px, 12vw, 110px);
+    font-weight: 900; color: #fff;
+    text-shadow: 0 0 40px rgba(0,180,255,0.5), 0 0 80px rgba(0,120,255,0.3);
+    letter-spacing: 10px; margin-bottom: 6px;
+  }
+  .menu-subtitle {
+    font-size: clamp(12px, 2.5vw, 18px); color: rgba(255,180,60,0.8);
+    letter-spacing: 6px; text-transform: uppercase; margin-bottom: 30px;
+  }
+  .menu-btn {
+    pointer-events: all; font-family: 'Orbitron', sans-serif;
+    font-size: clamp(16px, 3vw, 22px); color: #ff9a2e; background: none;
+    border: none; cursor: pointer; padding: 14px 40px; letter-spacing: 3px;
+    transition: all 0.3s; text-shadow: 0 0 15px rgba(255,154,46,0.4); position: relative;
+  }
+  .menu-btn:hover { color: #fff; text-shadow: 0 0 25px rgba(255,200,100,0.8); transform: scale(1.08); }
+  .menu-btn::after {
+    content: ''; position: absolute; bottom: 6px; left: 50%;
+    transform: translateX(-50%) scaleX(0); width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, #ff9a2e, transparent); transition: transform 0.3s;
+  }
+  .menu-btn:hover::after { transform: translateX(-50%) scaleX(1); }
+  .menu-secondary { color: rgba(200,210,220,0.6); font-size: clamp(13px, 2.2vw, 16px); }
+  .menu-secondary:hover { color: rgba(200,210,220,0.9); }
+
+  .lang-selector {
+    pointer-events: all; display: flex; gap: 14px; margin-bottom: 24px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .lang-btn {
+    font-family: 'Exo 2', sans-serif; font-size: 15px; padding: 10px 26px;
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 30px;
+    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5);
+    cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+  }
+  .lang-btn.active {
+    border-color: #ff9a2e; color: #ff9a2e; background: rgba(255,154,46,0.1);
+    box-shadow: 0 0 20px rgba(255,154,46,0.15);
+  }
+  .lang-btn:hover { border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.8); }
+
+  .name-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 32px; pointer-events: all;
+  }
+  .name-label {
+    font-family: 'Orbitron', sans-serif; font-size: 14px; color: rgba(255,255,255,0.5);
+    letter-spacing: 2px;
+  }
+  #name-input {
+    font-family: 'Exo 2', sans-serif; font-size: 18px; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,154,46,0.4);
+    border-radius: 8px; color: #ff9a2e; padding: 10px 18px; width: 220px;
+    outline: none; letter-spacing: 1px; text-align: center;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  #name-input:focus {
+    border-color: #ff9a2e; box-shadow: 0 0 20px rgba(255,154,46,0.2);
+  }
+  #name-input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .go-title {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(36px, 8vw, 70px);
+    font-weight: 900; color: #ff4444; text-shadow: 0 0 40px rgba(255,60,60,0.5);
+    letter-spacing: 6px; margin-bottom: 30px;
+  }
+  .go-stat {
+    font-size: clamp(16px, 3vw, 22px); color: rgba(255,255,255,0.7); margin: 10px 0;
+  }
+  .go-stat span { color: #ff9a2e; font-weight: 700; font-family: 'Orbitron', sans-serif; }
+  .go-hint {
+    font-size: 14px; color: rgba(255,255,255,0.3); letter-spacing: 2px; margin-top: 24px;
+    font-family: 'Orbitron', sans-serif;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0; padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 20; pointer-events: none; opacity: 0; transition: opacity 0.4s;
+  }
+  #hud.visible { opacity: 1; }
+  .hud-item {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(11px, 1.8vw, 15px);
+    color: rgba(255,255,255,0.6); letter-spacing: 2px;
+  }
+  .hud-value { color: #ff9a2e; font-weight: 700; }
+  .hud-heart { width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-left: 3px; }
+
+  .how-content { max-width: 500px; text-align: center; padding: 20px; }
+  .how-content h2 {
+    font-family: 'Orbitron', sans-serif; color: #ff9a2e; font-size: 28px;
+    margin-bottom: 24px; letter-spacing: 3px;
+  }
+  .how-content p { color: rgba(255,255,255,0.75); font-size: 16px; line-height: 1.8; margin-bottom: 12px; }
+  .key-hint {
+    display: inline-block; background: rgba(255,154,46,0.15);
+    border: 1px solid rgba(255,154,46,0.3); color: #ff9a2e;
+    padding: 2px 10px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-size: 13px;
+  }
+
+  .lb-content { max-width: 500px; width: 90%; text-align: center; }
+  .lb-content h2 {
+    font-family: 'Orbitron', sans-serif; color: #ff9a2e; font-size: 28px;
+    margin-bottom: 28px; letter-spacing: 3px;
+  }
+  .lb-table {
+    width: 100%; border-collapse: collapse; margin-bottom: 30px;
+  }
+  .lb-table th {
+    font-family: 'Orbitron', sans-serif; font-size: 11px; color: rgba(255,255,255,0.35);
+    letter-spacing: 2px; padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .lb-table th:last-child, .lb-table td:last-child { text-align: right; }
+  .lb-table td {
+    font-family: 'Exo 2', sans-serif; font-size: 16px; color: rgba(255,255,255,0.7);
+    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .lb-table tr:nth-child(1) td { color: #ffd700; font-weight: 700; }
+  .lb-table tr:nth-child(2) td { color: #c0c0c0; font-weight: 600; }
+  .lb-table tr:nth-child(3) td { color: #cd7f32; font-weight: 600; }
+  .lb-rank {
+    font-family: 'Orbitron', sans-serif; font-size: 14px; color: rgba(255,154,46,0.6);
+    width: 30px; display: inline-block;
+  }
+  .lb-score { font-family: 'Orbitron', sans-serif; font-weight: 700; color: #ff9a2e; }
+  .lb-wave { font-family: 'Orbitron', sans-serif; font-size: 13px; color: rgba(255,255,255,0.4); }
+  .lb-empty { color: rgba(255,255,255,0.25); font-style: italic; padding: 30px 0; }
+  .lb-new { background: rgba(255,154,46,0.08); }
+</style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+<canvas id="game"></canvas>
 
-  <div id="ui">
-    <div class="stat">
-      <span class="stat-label">WPM</span>
-      <span class="stat-value" id="wpmVal">0</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Точність</span>
-      <span class="stat-value" id="accVal">100%</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Рівень</span>
-      <span class="stat-value" id="lvlVal">1</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Рахунок</span>
-      <span class="stat-value" id="scoreVal">0</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Комбо</span>
-      <span id="comboDisplay">x1</span>
-    </div>
-    <div id="lives"></div>
+<div id="hud">
+  <div class="hud-item">РАХУНОК <span class="hud-value" id="hud-score">0</span></div>
+  <div class="hud-item">ХВИЛЯ <span class="hud-value" id="hud-wave">1</span></div>
+  <div class="hud-item" id="hud-lives"></div>
+</div>
+
+<div id="menu-screen" class="overlay">
+  <div class="menu-title">ZTYPE</div>
+  <div class="menu-subtitle">кириличний космос</div>
+  <div class="name-row">
+    <span class="name-label">ПІЛОТ:</span>
+    <input type="text" id="name-input" placeholder="Ваше имя..." maxlength="16" autocomplete="off">
   </div>
-
-  <div id="inputArea">
-    <span id="prompt">&gt;</span>
-    <input id="typeInput" type="text" autocomplete="off" autocorrect="off"
-           autocapitalize="off" spellcheck="false" placeholder="друкуй тут..." />
+  <div class="lang-selector">
+    <button class="lang-btn active" data-lang="ru">Русский</button>
+    <button class="lang-btn" data-lang="uk">Українська</button>
+    <button class="lang-btn" data-lang="mixed">Мікс</button>
   </div>
-
-  <div id="levelUp">LEVEL UP!</div>
-
-  <div id="overlay">
-    <h1>TYPING SHOOTER</h1>
-    <p class="subtitle">аркадний тренажер друку</p>
-    <div class="stats-block" id="finalStats" style="display:none">
-      <div class="big-stat"><span>WPM</span><span id="finalWpm">0</span></div>
-      <div class="big-stat"><span>ТОЧНІСТЬ</span><span id="finalAcc">0%</span></div>
-      <div class="big-stat"><span>РАХУНОК</span><span id="finalScore">0</span></div>
-      <div class="big-stat"><span>РІВЕНЬ</span><span id="finalLvl">0</span></div>
-    </div>
-    <button id="startBtn" onclick="window.startGame()">СТАРТ</button>
+  <button class="menu-btn" id="btn-start">НОВА ГРА</button>
+  <div style="display:flex;gap:10px;margin-top:10px">
+    <button class="menu-btn menu-secondary" id="btn-how">ЯК ГРАТИ</button>
+    <button class="menu-btn menu-secondary" id="btn-lb-menu">РЕЙТИНГ</button>
   </div>
+</div>
 
-  <script type="module" src="/src/main.js"></script>
+<div id="game-over-screen" class="overlay">
+  <div class="go-title">GAME OVER</div>
+  <div style="text-align:center;margin-bottom:30px">
+    <div class="go-stat">Рахунок: <span id="go-score">0</span></div>
+    <div class="go-stat">Хвиля: <span id="go-wave">1</span></div>
+    <div class="go-stat">Знищено: <span id="go-killed">0</span></div>
+    <div class="go-stat">Точність: <span id="go-accuracy">0%</span></div>
+  </div>
+  <button class="menu-btn" id="btn-restart">ГРАТИ ЗНОВУ</button>
+  <div style="display:flex;gap:10px;margin-top:10px">
+    <button class="menu-btn menu-secondary" id="btn-lb-go">РЕЙТИНГ</button>
+    <button class="menu-btn menu-secondary" id="btn-menu">МЕНЮ</button>
+  </div>
+  <div class="go-hint">ПРОБІЛ — ГРАТИ ЗНОВУ</div>
+</div>
+
+<div id="how-screen" class="overlay">
+  <div class="how-content">
+    <h2>ЯК ГРАТИ</h2>
+    <p>Ворожі кораблі летять зверху зі словами.</p>
+    <p>Набирайте слово на клавіатурі, щоб знищити ворога.</p>
+    <p>Введіть першу літеру — корабель стане ціллю.<br>Допишіть слово до кінця, щоб його знищити.</p>
+    <p>Якщо ворог долетить донизу — втратите життя.</p>
+    <p><span class="key-hint">ESC</span> — пауза &nbsp; <span class="key-hint">ПРОБІЛ</span> — рестарт</p>
+    <p style="margin-top:8px;color:rgba(255,200,100,0.7)">Переключіть розкладку на RU або UK!</p>
+  </div>
+  <button class="menu-btn" id="btn-how-close" style="margin-top:24px">НАЗАД</button>
+</div>
+
+<div id="leaderboard-screen" class="overlay">
+  <div class="lb-content">
+    <h2>РЕЙТИНГ</h2>
+    <div id="lb-body"></div>
+    <button class="menu-btn" id="btn-lb-close" style="margin-top:10px">НАЗАД</button>
+  </div>
+</div>
+
+<script>
+var WORDS_RU = {
+  easy: [
+    "кот","дом","мир","лес","сон","рот","нос","мяч","дым","лук","мед","щит","шар","вид","ход",
+    "бег","луч","пар","тон","жар","лед","рис","час","бой","лов","зуб","ряд","сок","гул","вол",
+    "пыл","газ","мак","лак","дуб","куб","бор","ров","пол","шум","мех","рог","гол","лом",
+    "сыр","код","лоб","шаг","пир","чай","рай","бык","жук","кум","дно","гриб",
+    "хлеб","крик","снег","звук","стол","стул","мост","слон","волк","конь","гром","блин",
+    "крот","лось","клей","знак","путь","свет","цвет","нить","соль","гусь","рысь","тень",
+    "день","ночь","сеть","крем","торт","флаг","танк","парк","порт","лифт","гнев","плащ","хвост",
+    "класс","текст","мозг","тест","шторм","грунт","фронт","старт","спорт"
+  ],
+  medium: [
+    "город","книга","время","земля","слово","место","сила","рука","огонь","закон","народ","право",
+    "свет","голос","мысль","берег","ветер","мороз","дождь","замок","поезд","буква","наука","зверь",
+    "лампа","крыша","пламя","озеро","птица","поток","масло","песок","забор","грязь","нитка","шапка",
+    "марка","кость","ствол","дверь","трава","вода","небо","река","рыба","гора","нога","спина",
+    "палец","волос","кожа","глаз","зима","весна","лето","осень","утро","вечер",
+    "тропа","башня","склон","пещера","искра","клинок","бочка","доска","ветка","плита",
+    "стена","полка","миска","ложка","вилка","чашка","блюдо","печка","труба","бревно","канат",
+    "цепь","якорь","метла","ведро","колесо","зерно","листок","корень","ягода","грибок"
+  ],
+  hard: [
+    "молоко","работа","солнце","дерево","машина","улица","дорога","школа","письмо","облако",
+    "золото","кухня","музыка","минута","группа","камень","платок","ошибка","вопрос","ответ",
+    "погода","фонарь","платье","лопата","ракета","победа","чайник","фигура","сапоги","загадка",
+    "одежда","таблица","зеркало","яблоко","картина","корзина","подушка","кровать","занавес",
+    "лестница","коридор","балкон","калитка","колодец","деревня","столица",
+    "вокзал","магазин","аптека","больница","фонтан","площадь","бульвар",
+    "светофор","тротуар","остановка","маршрут","трамвай","автобус",
+    "самолёт","черепаха","крокодил","дельфин","горизонт","водопад","вулкан","пустыня"
+  ],
+  expert: [
+    "праздник","движение","растение","будущее","традиция","перевод","общество","качество",
+    "характер","открытие","музыкант","прогулка","сражение","крепость","академия","телефон",
+    "документ","механизм","элемент","процесс","программа","рисунок","квартира","скорость",
+    "вещество","половина","путешествие","приключение","строительство",
+    "университет","температура","архитектура","литература",
+    "математика","информация","технология","библиотека","расписание",
+    "произведение","перспектива","конструкция","фотография",
+    "воображение","вдохновение","атмосфера","лаборатория","астрономия",
+    "калькулятор","клавиатура","монитор","процессор","интерфейс","платформа","алгоритм"
+  ]
+};
+
+var WORDS_UK = {
+  easy: [
+    "кіт","дім","мир","ліс","сон","ніс","рот","мяч","дим","лук","мед","щит","кут","вид","хід",
+    "біг","дуб","лід","рис","час","бій","зуб","ряд","сік","крок","лад","мак","лак","куб","рів",
+    "гай","рай","вал","пар","тон","жар","пил","газ","сум","лоб","мох","сир","код","бик",
+    "пес","жук","дно","гриб","хліб","крик","сніг","звук","стіл","міст","слон","вовк",
+    "кінь","грім","дощ","крот","лось","клей","знак","шлях","світ","колір","нить",
+    "сіль","гусь","рись","тінь","день","ніч","крем","торт","прапор","танк","парк","порт",
+    "ліфт","гнів","плащ","хвіст","клас","текст","мозок","тест","шторм","грунт","фронт","старт",
+    "спорт"
+  ],
+  medium: [
+    "місто","книга","земля","слово","місце","сила","рука","шлях","вогонь","закон","народ","право",
+    "світ","голос","думка","берег","вітер","мороз","хмара","замок","поїзд","буква","наука","звір",
+    "лампа","криша","озеро","птах","потік","масло","пісок","паркан","бруд","нитка","шапка","марка",
+    "зірка","кість","стовп","двері","трава","вода","небо","ріка","риба","гора","нога",
+    "спина","палець","шкіра","зима","весна","літо","осінь","ранок","вечір",
+    "стежка","вежа","схил","печера","іскра","клинок","бочка","дошка","гілка","плита","стіна",
+    "полиця","миска","ложка","виделка","ніж","чашка","страва","труба","канат",
+    "ланцюг","якір","мітла","відро","колесо","зерно","листок","корінь","ягода","грибок"
+  ],
+  hard: [
+    "молоко","робота","сонце","дерево","машина","вулиця","дорога","школа","лист","хмара",
+    "дзеркало","золото","кухня","музика","камінь","платок","помилка","питання","погода","ліхтар",
+    "плаття","лопата","ракета","корабель","перемога","чайник","килим","фігура","загадка","одяг",
+    "таблиця","яблуко","картина","кошик","подушка","ліжко","сходи","коридор","балкон",
+    "колодязь","село","столиця","вокзал","крамниця","аптека",
+    "лікарня","фонтан","площа","бульвар","світлофор","тротуар",
+    "зупинка","маршрут","трамвай","автобус","літак","черепаха","крокодил",
+    "дельфін","горизонт","водоспад","вулкан","пустеля"
+  ],
+  expert: [
+    "свято","рослина","будівник","майбутнє","традиція","переклад","принцеса","якість","простір",
+    "характер","пригода","музикант","прогулянка","фортеця","програма","академія","телефон",
+    "всесвіт","документ","механізм","елемент","процесор","квартира","швидкість","речовина",
+    "половина","подорож","пригода","будівництво","університет",
+    "температура","архітектура","література","математика","інформація","технологія",
+    "бібліотека","розклад","перспектива","конструкція",
+    "фотографія","натхнення","атмосфера","лабораторія","астрономія","мікроскоп",
+    "калькулятор","клавіатура","монітор","контролер","інтерфейс","платформа","алгоритм"
+  ]
+};
+
+function getLeaderboard() {
+  try { var data = localStorage.getItem("ztype_leaderboard"); if (data) return JSON.parse(data); } catch(e) {}
+  return [];
+}
+function saveLeaderboard(lb) {
+  try { localStorage.setItem("ztype_leaderboard", JSON.stringify(lb)); } catch(e) {}
+}
+function addToLeaderboard(name, sc, wv, killed, accuracy) {
+  var lb = getLeaderboard();
+  lb.push({ name: name, score: sc, wave: wv, killed: killed, accuracy: accuracy, date: Date.now() });
+  lb.sort(function(a, b) { return b.score - a.score; });
+  if (lb.length > 10) lb = lb.slice(0, 10);
+  saveLeaderboard(lb);
+  return lb;
+}
+function renderLeaderboard(highlightScore) {
+  var lb = getLeaderboard();
+  var el = document.getElementById("lb-body");
+  if (lb.length === 0) {
+    el.innerHTML = '<div class="lb-empty">Поки що порожньо. Будьте першим!</div>';
+    return;
+  }
+  var html = '<table class="lb-table"><thead><tr><th>#</th><th>ПІЛОТ</th><th>ХВИЛЯ</th><th>РАХУНОК</th></tr></thead><tbody>';
+  for (var i = 0; i < lb.length; i++) {
+    var entry = lb[i];
+    var cls = "";
+    if (highlightScore && entry.date === highlightScore) cls = ' class="lb-new"';
+    html += "<tr" + cls + ">";
+    var medal = "";
+    if (i === 0) medal = "🥇";
+    else if (i === 1) medal = "🥈";
+    else if (i === 2) medal = "🥉";
+    else medal = (i + 1) + "";
+    html += '<td><span class="lb-rank">' + medal + '</span></td>';
+    html += "<td>" + escapeHtml(entry.name) + "</td>";
+    html += '<td><span class="lb-wave">' + entry.wave + '</span></td>';
+    html += '<td><span class="lb-score">' + entry.score + '</span></td>';
+    html += "</tr>";
+  }
+  html += "</tbody></table>";
+  el.innerHTML = html;
+}
+function escapeHtml(str) {
+  var d = document.createElement("div"); d.textContent = str; return d.innerHTML;
+}
+
+var canvas = document.getElementById("game");
+var ctx = canvas.getContext("2d");
+var W, H;
+function resize() { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; }
+resize();
+window.addEventListener("resize", resize);
+
+var stars = [];
+function makeStar(init) {
+  return { x: Math.random()*W, y: init ? Math.random()*H : -5,
+    size: Math.random()*2+0.5, speed: Math.random()*0.6+0.2,
+    alpha: Math.random()*0.6+0.4, phase: Math.random()*Math.PI*2 };
+}
+for (var i = 0; i < 200; i++) stars.push(makeStar(true));
+function updateStars(dt) {
+  for (var i=0;i<stars.length;i++) { stars[i].y+=stars[i].speed*dt*40; if(stars[i].y>H+10) stars[i]=makeStar(false); }
+}
+function drawStars() {
+  var t=performance.now()*0.001;
+  for (var i=0;i<stars.length;i++) {
+    var s=stars[i]; var a=s.alpha*(0.7+0.3*Math.sin(t*2+s.phase));
+    ctx.fillStyle="rgba(200,220,255,"+a+")";
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.size,0,Math.PI*2); ctx.fill();
+  }
+}
+function drawBackground() {
+  var g=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.7);
+  g.addColorStop(0,"#0a1628"); g.addColorStop(0.4,"#061020"); g.addColorStop(1,"#020810");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  var t=performance.now()*0.0001;
+  var nx=W*0.3+Math.sin(t)*W*0.1, ny=H*0.4+Math.cos(t*0.7)*H*0.1;
+  var ng=ctx.createRadialGradient(nx,ny,0,nx,ny,W*0.35);
+  ng.addColorStop(0,"rgba(20,60,120,0.12)"); ng.addColorStop(0.5,"rgba(10,30,80,0.06)"); ng.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=ng; ctx.fillRect(0,0,W,H);
+}
+
+var player = { x:0, y:0, lives:3 };
+function drawPlayer() {
+  player.x=W/2; player.y=H-70; var s=18;
+  ctx.save(); ctx.translate(player.x,player.y);
+  var eg=ctx.createRadialGradient(0,s+4,0,0,s+4,s*1.5);
+  eg.addColorStop(0,"rgba(255,140,20,0.6)"); eg.addColorStop(0.4,"rgba(255,80,0,0.2)"); eg.addColorStop(1,"rgba(255,40,0,0)");
+  ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(0,s+4,s*1.5,0,Math.PI*2); ctx.fill();
+  var fl=Math.sin(performance.now()*0.02)*4;
+  ctx.fillStyle="#ff8800"; ctx.beginPath(); ctx.moveTo(-6,s); ctx.lineTo(0,s+16+fl); ctx.lineTo(6,s); ctx.fill();
+  ctx.fillStyle="#ffcc44"; ctx.beginPath(); ctx.moveTo(-3,s); ctx.lineTo(0,s+10+fl*0.6); ctx.lineTo(3,s); ctx.fill();
+  ctx.fillStyle="#d4a020"; ctx.strokeStyle="#ffcc44"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,-s); ctx.lineTo(-s*0.7,s*0.5); ctx.lineTo(-s*0.3,s); ctx.lineTo(s*0.3,s); ctx.lineTo(s*0.7,s*0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+  var cg=ctx.createLinearGradient(0,-s*0.3,0,s*0.3); cg.addColorStop(0,"#88ccff"); cg.addColorStop(1,"#4488cc");
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.ellipse(0,0,s*0.22,s*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+var enemies = [];
+function createEnemy(word,speed,x) {
+  return { word:word.toLowerCase(), typed:0, x:x, y:-30, speed:speed, active:true,
+    targeted:false, exploding:false, explodeTime:0, particles:[],
+    wobble:Math.random()*Math.PI*2, wobbleSpeed:(Math.random()-0.5)*0.5 };
+}
+function explodeEnemy(e) {
+  e.exploding=true; e.explodeTime=0;
+  var colors=["#ff9a2e","#ffcc44","#ff4444","#ffee88"];
+  for (var i=0;i<20;i++) {
+    var a=Math.random()*Math.PI*2, sp=Math.random()*180+40;
+    e.particles.push({ x:e.x, y:e.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:Math.random()*0.5+0.3, maxLife:0.8, size:Math.random()*3+1,
+      color:colors[Math.floor(Math.random()*4)] });
+  }
+}
+function updateEnemy(e,dt) {
+  if (e.exploding) {
+    e.explodeTime+=dt;
+    for (var i=0;i<e.particles.length;i++){var p=e.particles[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt;}
+    e.particles=e.particles.filter(function(p){return p.life>0;});
+    if (e.explodeTime>0.8) e.active=false; return null;
+  }
+  e.y+=e.speed*dt; e.wobble+=e.wobbleSpeed*dt; e.x+=Math.sin(e.wobble)*0.3;
+  if (e.y>H-50) { e.active=false; return "hit"; } return null;
+}
+function drawEnemy(e) {
+  if (e.exploding) {
+    for (var i=0;i<e.particles.length;i++){
+      var p=e.particles[i]; ctx.globalAlpha=Math.max(0,p.life/p.maxLife); ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
+    } ctx.globalAlpha=1; return;
+  }
+  var eg=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,22);
+  eg.addColorStop(0,e.targeted?"rgba(255,100,30,0.35)":"rgba(255,180,60,0.15)");
+  eg.addColorStop(1,"rgba(0,0,0,0)"); ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(e.x,e.y,22,0,Math.PI*2); ctx.fill();
+  ctx.save(); ctx.translate(e.x,e.y);
+  var angle=Math.atan2(player.x-e.x,player.y-e.y); ctx.rotate(-angle+Math.PI);
+  var r=10; ctx.fillStyle=e.targeted?"#ff6a00":"#cc8800"; ctx.strokeStyle="#ffaa33"; ctx.lineWidth=1;
+  ctx.beginPath();
+  for(var i=0;i<8;i++){var a1=(i/8)*Math.PI*2,a2=((i+0.5)/8)*Math.PI*2; ctx.lineTo(Math.cos(a1)*r,Math.sin(a1)*r); ctx.lineTo(Math.cos(a2)*r*0.65,Math.sin(a2)*r*0.65);}
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle="#ffdd66"; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill(); ctx.restore();
+  var fs=16; ctx.font="bold "+fs+"px 'Exo 2', sans-serif";
+  var typed=e.word.substring(0,e.typed), rem=e.word.substring(e.typed);
+  var tw=ctx.measureText(typed).width, rw=ctx.measureText(rem).width;
+  var bw=tw+rw+14, bh=fs+10, bx=e.x-bw/2, by=e.y-28-bh/2, br=4;
+  ctx.fillStyle="rgba(0,0,0,0.8)"; ctx.beginPath();
+  ctx.moveTo(bx+br,by); ctx.lineTo(bx+bw-br,by); ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+br);
+  ctx.lineTo(bx+bw,by+bh-br); ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-br,by+bh);
+  ctx.lineTo(bx+br,by+bh); ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-br);
+  ctx.lineTo(bx,by+br); ctx.quadraticCurveTo(bx,by,bx+br,by); ctx.closePath(); ctx.fill();
+  if(e.targeted){ctx.strokeStyle="rgba(255,154,46,0.6)"; ctx.lineWidth=1.5; ctx.stroke();}
+  var tx=bx+7, ty=by+bh-6;
+  if(typed.length>0){ctx.fillStyle="#ff9a2e"; ctx.fillText(typed,tx,ty);}
+  ctx.fillStyle="#ffffff"; ctx.fillText(rem,tx+tw,ty);
+}
+
+var lasers = [];
+function createLaser(fx,fy,tx,ty){return {fromX:fx,fromY:fy,toX:tx,toY:ty,life:0.15,active:true};}
+function drawLaser(l) {
+  var a=l.life/0.15; ctx.globalAlpha=a;
+  ctx.strokeStyle="rgba(255,140,20,0.4)"; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(l.fromX,l.fromY); ctx.lineTo(l.toX,l.toY); ctx.stroke();
+  ctx.strokeStyle="#ffcc44"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(l.fromX,l.fromY); ctx.lineTo(l.toX,l.toY); ctx.stroke();
+  ctx.strokeStyle="#fff"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(l.fromX,l.fromY); ctx.lineTo(l.toX,l.toY); ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+var gameState="menu", selectedLang="ru", playerName="";
+var score=0, wave=1, enemiesInWave=5, enemiesSpawned=0, spawnTimer=0;
+var currentTarget=null, totalTyped=0, correctTyped=0, enemiesKilled=0, lastTime=0;
+var lastGameTimestamp=0;
+
+function getWords() {
+  if (selectedLang==="mixed") return {
+    easy:WORDS_RU.easy.concat(WORDS_UK.easy), medium:WORDS_RU.medium.concat(WORDS_UK.medium),
+    hard:WORDS_RU.hard.concat(WORDS_UK.hard), expert:WORDS_RU.expert.concat(WORDS_UK.expert)
+  };
+  return selectedLang==="ru"?WORDS_RU:WORDS_UK;
+}
+function getRandomWord() {
+  var w=getWords(), pool;
+  if(wave<=2) pool=w.easy;
+  else if(wave<=4) pool=w.easy.concat(w.medium);
+  else if(wave<=7) pool=w.medium.concat(w.hard);
+  else pool=w.hard.concat(w.expert);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function spawnEnemy() {
+  var speed=60+wave*8+Math.random()*20, word=getRandomWord();
+  var x=Math.random()*(W-200)+100;
+  for(var att=0;att<10;att++){
+    var ok=true;
+    for(var i=0;i<enemies.length;i++){if(!enemies[i].exploding&&Math.abs(enemies[i].x-x)<80&&enemies[i].y<60){ok=false;break;}}
+    if(ok)break; x=Math.random()*(W-200)+100;
+  }
+  enemies.push(createEnemy(word,speed,x)); enemiesSpawned++;
+}
+function updateHUD() {
+  document.getElementById("hud-score").textContent=score;
+  document.getElementById("hud-wave").textContent=wave;
+  var h="";
+  for(var i=0;i<player.lives;i++) h+='<svg class="hud-heart" viewBox="0 0 24 24" fill="#ff4444"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+  document.getElementById("hud-lives").innerHTML=h;
+}
+
+function startGame() {
+  var nameEl=document.getElementById("name-input");
+  playerName=nameEl.value.trim();
+  if (!playerName) { nameEl.focus(); nameEl.style.borderColor="#ff4444"; nameEl.style.boxShadow="0 0 20px rgba(255,68,68,0.3)";
+    setTimeout(function(){nameEl.style.borderColor="rgba(255,154,46,0.4)";nameEl.style.boxShadow="none";},1000); return; }
+  nameEl.blur();
+  gameState="playing"; enemies=[]; lasers=[];
+  score=0; wave=1; enemiesInWave=5; enemiesSpawned=0; spawnTimer=0;
+  currentTarget=null; player.lives=3; totalTyped=0; correctTyped=0; enemiesKilled=0;
+  document.getElementById("menu-screen").classList.add("hidden");
+  document.getElementById("game-over-screen").classList.remove("visible");
+  document.getElementById("hud").classList.add("visible");
+  updateHUD();
+}
+
+function gameOver() {
+  gameState="gameover";
+  document.getElementById("hud").classList.remove("visible");
+  document.getElementById("go-score").textContent=score;
+  document.getElementById("go-wave").textContent=wave;
+  document.getElementById("go-killed").textContent=enemiesKilled;
+  var acc=totalTyped>0?Math.round((correctTyped/totalTyped)*100):0;
+  document.getElementById("go-accuracy").textContent=acc+"%";
+  var ts=Date.now(); lastGameTimestamp=ts;
+  addToLeaderboard(playerName,score,wave,enemiesKilled,acc);
+  document.getElementById("game-over-screen").classList.add("visible");
+}
+
+function restartGame() {
+  gameState="playing"; enemies=[]; lasers=[];
+  score=0; wave=1; enemiesInWave=5; enemiesSpawned=0; spawnTimer=0;
+  currentTarget=null; player.lives=3; totalTyped=0; correctTyped=0; enemiesKilled=0;
+  document.getElementById("game-over-screen").classList.remove("visible");
+  document.getElementById("hud").classList.add("visible");
+  updateHUD();
+}
+
+document.addEventListener("keydown", function(ev) {
+  if ((ev.key===" "||ev.key==="Spacebar")&&gameState==="gameover") { ev.preventDefault(); restartGame(); return; }
+  if (ev.key===" "||ev.key==="Spacebar") { ev.preventDefault(); return; }
+  if (gameState==="menu"||gameState==="gameover") return;
+  if (ev.key==="Escape") { gameState=gameState==="playing"?"paused":"playing"; return; }
+  if (gameState!=="playing") return;
+  var key=ev.key.toLowerCase();
+  if (!/^[а-яёіїєґ]$/.test(key)) return;
+  ev.preventDefault();
+  totalTyped++;
+  if (currentTarget&&!currentTarget.exploding&&currentTarget.active) {
+    var nc=currentTarget.word[currentTarget.typed];
+    if (key===nc) {
+      currentTarget.typed++; correctTyped++; score+=10;
+      lasers.push(createLaser(player.x,player.y-18,currentTarget.x,currentTarget.y));
+      if (currentTarget.typed>=currentTarget.word.length) {
+        explodeEnemy(currentTarget); score+=50+currentTarget.word.length*5; enemiesKilled++; currentTarget=null;
+      }
+      updateHUD();
+    }
+    return;
+  }
+  var best=null, bestDist=Infinity;
+  for (var i=0;i<enemies.length;i++) {
+    var en=enemies[i];
+    if (en.exploding||!en.active||en.typed>0) continue;
+    if (en.word[0]===key) { var d=Math.hypot(player.x-en.x,player.y-en.y); if(d<bestDist){bestDist=d;best=en;} }
+  }
+  if (best) {
+    if(currentTarget) currentTarget.targeted=false;
+    currentTarget=best; currentTarget.targeted=true; currentTarget.typed=1;
+    correctTyped++; score+=10;
+    lasers.push(createLaser(player.x,player.y-18,best.x,best.y));
+    if(currentTarget.typed>=currentTarget.word.length){explodeEnemy(currentTarget);score+=50+currentTarget.word.length*5;enemiesKilled++;currentTarget=null;}
+    updateHUD();
+  }
+});
+
+var langBtns=document.querySelectorAll(".lang-btn");
+for(var i=0;i<langBtns.length;i++){(function(btn){btn.addEventListener("click",function(){
+  for(var j=0;j<langBtns.length;j++) langBtns[j].classList.remove("active");
+  btn.classList.add("active"); selectedLang=btn.getAttribute("data-lang");
+});})(langBtns[i]);}
+
+document.getElementById("btn-start").addEventListener("click", startGame);
+document.getElementById("btn-restart").addEventListener("click", restartGame);
+document.getElementById("btn-menu").addEventListener("click", function(){
+  document.getElementById("game-over-screen").classList.remove("visible");
+  document.getElementById("menu-screen").classList.remove("hidden"); gameState="menu";
+});
+document.getElementById("btn-how").addEventListener("click", function(){ document.getElementById("how-screen").classList.add("visible"); });
+document.getElementById("btn-how-close").addEventListener("click", function(){ document.getElementById("how-screen").classList.remove("visible"); });
+document.getElementById("btn-lb-menu").addEventListener("click", function(){ renderLeaderboard(); document.getElementById("leaderboard-screen").classList.add("visible"); });
+document.getElementById("btn-lb-go").addEventListener("click", function(){ renderLeaderboard(lastGameTimestamp); document.getElementById("leaderboard-screen").classList.add("visible"); });
+document.getElementById("btn-lb-close").addEventListener("click", function(){ document.getElementById("leaderboard-screen").classList.remove("visible"); });
+
+document.getElementById("name-input").addEventListener("keydown", function(ev) {
+  if (ev.key==="Enter") { ev.preventDefault(); startGame(); }
+  ev.stopPropagation();
+});
+
+try { var savedName=localStorage.getItem("ztype_name"); if(savedName) document.getElementById("name-input").value=savedName; } catch(e){}
+
+function gameLoop(time) {
+  requestAnimationFrame(gameLoop);
+  if(!lastTime) lastTime=time;
+  var dt=(time-lastTime)/1000; lastTime=time; if(dt>0.1) dt=0.016;
+  drawBackground(); updateStars(dt); drawStars();
+  if(gameState==="menu"||gameState==="gameover") return;
+  if(gameState==="paused") {
+    for(var i=0;i<enemies.length;i++) drawEnemy(enemies[i]);
+    for(var i=0;i<lasers.length;i++) drawLaser(lasers[i]);
+    drawPlayer();
+    ctx.fillStyle="rgba(0,0,0,0.55)"; ctx.fillRect(0,0,W,H);
+    ctx.font="bold 48px 'Orbitron', sans-serif"; ctx.fillStyle="#ff9a2e"; ctx.textAlign="center";
+    ctx.fillText("ПАУЗА",W/2,H/2);
+    ctx.font="18px 'Exo 2', sans-serif"; ctx.fillStyle="rgba(255,255,255,0.5)";
+    ctx.fillText("ESC",W/2,H/2+40); ctx.textAlign="left"; return;
+  }
+  spawnTimer-=dt;
+  if(enemiesSpawned<enemiesInWave&&spawnTimer<=0){spawnEnemy();spawnTimer=Math.max(0.4,1.5-wave*0.1);}
+  if(enemiesSpawned>=enemiesInWave){
+    var alive=0; for(var i=0;i<enemies.length;i++){if(!enemies[i].exploding&&enemies[i].active)alive++;}
+    if(alive===0){wave++;enemiesInWave=Math.min(5+wave*3,40);enemiesSpawned=0;spawnTimer=1.0;updateHUD();}
+  }
+  for(var i=enemies.length-1;i>=0;i--){
+    var r=updateEnemy(enemies[i],dt);
+    if(r==="hit"){if(enemies[i]===currentTarget)currentTarget=null;player.lives--;updateHUD();if(player.lives<=0){gameOver();return;}}
+  }
+  enemies=enemies.filter(function(e){return e.active;});
+  if(currentTarget&&(!currentTarget.active||currentTarget.exploding)) currentTarget=null;
+  for(var i=0;i<lasers.length;i++){lasers[i].life-=dt;if(lasers[i].life<=0)lasers[i].active=false;}
+  lasers=lasers.filter(function(l){return l.active;});
+  for(var i=0;i<lasers.length;i++) drawLaser(lasers[i]);
+  for(var i=0;i<enemies.length;i++) drawEnemy(enemies[i]);
+  drawPlayer();
+}
+requestAnimationFrame(gameLoop);
+
+document.getElementById("name-input").addEventListener("input", function() {
+  try { localStorage.setItem("ztype_name", this.value); } catch(e) {}
+});
+</script>
 </body>
 </html>
