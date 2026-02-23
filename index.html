@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Shooter</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+    }
+    #ui {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      background: rgba(0,0,0,0.6);
+      border-bottom: 1px solid rgba(0,255,255,0.2);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .stat-label {
+      font-size: 10px;
+      color: rgba(0,255,255,0.6);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+    }
+    #comboDisplay {
+      font-size: 14px;
+      color: #ff6600;
+      text-shadow: 0 0 8px #ff6600;
+      letter-spacing: 1px;
+    }
+    #inputArea {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(0,0,0,0.8);
+      border-top: 1px solid rgba(0,255,255,0.2);
+      gap: 12px;
+      z-index: 10;
+    }
+    #prompt {
+      color: rgba(0,255,255,0.5);
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+    #typeInput {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #00ffff;
+      font-size: 20px;
+      font-family: 'Courier New', monospace;
+      caret-color: #00ffff;
+      text-shadow: 0 0 8px #00ffff;
+      letter-spacing: 2px;
+    }
+    #overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+    }
+    #overlay h1 {
+      font-size: 52px;
+      color: #00ffff;
+      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+      letter-spacing: 6px;
+      margin-bottom: 12px;
+    }
+    #overlay .subtitle {
+      font-size: 16px;
+      color: rgba(0,255,255,0.6);
+      letter-spacing: 3px;
+      margin-bottom: 48px;
+    }
+    #overlay .stats-block {
+      display: flex;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    #overlay .big-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #overlay .big-stat span:first-child {
+      font-size: 11px;
+      color: rgba(0,255,255,0.5);
+      letter-spacing: 2px;
+    }
+    #overlay .big-stat span:last-child {
+      font-size: 40px;
+      color: #00ffff;
+      text-shadow: 0 0 15px #00ffff;
+      font-weight: bold;
+    }
+    #startBtn {
+      padding: 14px 48px;
+      background: transparent;
+      border: 2px solid #00ffff;
+      color: #00ffff;
+      font-size: 18px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(0,255,255,0.3);
+    }
+    #startBtn:hover {
+      background: rgba(0,255,255,0.1);
+      box-shadow: 0 0 30px rgba(0,255,255,0.6);
+    }
+    #levelUp {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      color: #ff6600;
+      text-shadow: 0 0 20px #ff6600;
+      letter-spacing: 6px;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #lives {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .heart {
+      font-size: 18px;
+      filter: drop-shadow(0 0 6px #ff0055);
+    }
+    .heart.dead {
+      opacity: 0.2;
+      filter: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="ui">
+    <div class="stat">
+      <span class="stat-label">WPM</span>
+      <span class="stat-value" id="wpmVal">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Точність</span>
+      <span class="stat-value" id="accVal">100%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Рівень</span>
+      <span class="stat-value" id="lvlVal">1</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Рахунок</span>
+      <span class="stat-value" id="scoreVal">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Комбо</span>
+      <span id="comboDisplay">x1</span>
+    </div>
+    <div id="lives"></div>
+  </div>
+
+  <div id="inputArea">
+    <span id="prompt">&gt;</span>
+    <input id="typeInput" type="text" autocomplete="off" autocorrect="off"
+           autocapitalize="off" spellcheck="false" placeholder="друкуй тут..." />
+  </div>
+
+  <div id="levelUp">LEVEL UP!</div>
+
+  <div id="overlay">
+    <h1>TYPING SHOOTER</h1>
+    <p class="subtitle">аркадний тренажер друку</p>
+    <div class="stats-block" id="finalStats" style="display:none">
+      <div class="big-stat"><span>WPM</span><span id="finalWpm">0</span></div>
+      <div class="big-stat"><span>ТОЧНІСТЬ</span><span id="finalAcc">0%</span></div>
+      <div class="big-stat"><span>РАХУНОК</span><span id="finalScore">0</span></div>
+      <div class="big-stat"><span>РІВЕНЬ</span><span id="finalLvl">0</span></div>
+    </div>
+    <button id="startBtn" onclick="window.startGame()">СТАРТ</button>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
